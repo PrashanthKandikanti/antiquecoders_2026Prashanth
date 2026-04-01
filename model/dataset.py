@@ -1,4 +1,4 @@
-"""Dataset and transform helpers for wheat disease training."""
+"""Dataset and transform helpers for plant validation and disease training."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from model.constants import (
     IMAGENET_MEAN,
     IMAGENET_STD,
     INPUT_SIZE,
-    STAGE1_CLASS_NAMES,
+    PREDICTION_CLASS_NAMES,
 )
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
@@ -55,8 +55,8 @@ def build_val_transform() -> A.Compose:
     )
 
 
-class WheatDiseaseDataset(Dataset):
-    """Custom dataset matching the expected data/train/<class> layout."""
+class ImageClassificationDataset(Dataset):
+    """Generic dataset matching the expected data/train/<class> layout."""
 
     def __init__(
         self,
@@ -99,45 +99,29 @@ class WheatDiseaseDataset(Dataset):
         image_np = np.array(image)
 
         if self.transform is None:
-            raise ValueError("A transform must be provided for WheatDiseaseDataset.")
+            raise ValueError("A transform must be provided for ImageClassificationDataset.")
 
         transformed = self.transform(image=image_np)
         tensor = transformed["image"]
         return tensor, label
 
 
-class LegacyFlatWheatDiseaseDataset(Dataset):
-    """Build stage-specific labels from the old flat train/val/test folder layout."""
+class LegacyFlatDiseaseDataset(Dataset):
+    """Build disease labels from the old flat train/val/test folder layout."""
 
     def __init__(
         self,
         root_dir: str | Path,
-        stage: str,
         transform: A.Compose | None = None,
     ) -> None:
         self.root_dir = Path(root_dir)
-        self.stage = stage
         self.transform = transform
-
-        if self.stage == "stage1":
-            self.class_names = list(STAGE1_CLASS_NAMES)
-        elif self.stage == "stage2":
-            self.class_names = list(DISEASE_CLASS_NAMES)
-        else:
-            raise ValueError(f"Unsupported stage: {stage}")
-
+        self.class_names = list(PREDICTION_CLASS_NAMES)
         self.class_to_idx = {name: idx for idx, name in enumerate(self.class_names)}
         self.samples = self._collect_samples()
 
         if not self.samples:
-            raise ValueError(f"No image files found under {self.root_dir} for {self.stage}")
-
-    def _map_class_name(self, class_name: str) -> str | None:
-        if self.stage == "stage1":
-            return "healthy" if class_name == "healthy" else "diseased"
-        if class_name == "healthy":
-            return None
-        return class_name if class_name in self.class_to_idx else None
+            raise ValueError(f"No image files found under {self.root_dir}")
 
     def _collect_samples(self) -> list[tuple[Path, int]]:
         if not self.root_dir.exists():
@@ -157,13 +141,12 @@ class LegacyFlatWheatDiseaseDataset(Dataset):
             )
 
         for class_name, class_dir in sorted(available_dirs.items()):
-            mapped_name = self._map_class_name(class_name)
-            if mapped_name is None:
+            if class_name not in self.class_to_idx:
                 continue
 
             for image_path in sorted(class_dir.rglob("*")):
                 if image_path.is_file() and image_path.suffix.lower() in IMAGE_EXTENSIONS:
-                    samples.append((image_path, self.class_to_idx[mapped_name]))
+                    samples.append((image_path, self.class_to_idx[class_name]))
 
         return samples
 
@@ -176,8 +159,13 @@ class LegacyFlatWheatDiseaseDataset(Dataset):
         image_np = np.array(image)
 
         if self.transform is None:
-            raise ValueError("A transform must be provided for LegacyFlatWheatDiseaseDataset.")
+            raise ValueError("A transform must be provided for LegacyFlatDiseaseDataset.")
 
         transformed = self.transform(image=image_np)
         tensor = transformed["image"]
         return tensor, label
+
+
+# Backward-compatible aliases for the previous names used across the app.
+WheatDiseaseDataset = ImageClassificationDataset
+LegacyFlatWheatDiseaseDataset = LegacyFlatDiseaseDataset

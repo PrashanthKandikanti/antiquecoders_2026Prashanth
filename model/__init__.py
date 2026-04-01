@@ -1,5 +1,5 @@
-"""Model training and shared inference utilities for wheat disease detection."""
+"""Model training and shared inference utilities for plant disease detection."""
 
-from model.inference import HierarchicalPredictor, ModelNotReadyError
+from model.inference import HierarchicalPredictor, ModelNotReadyError, PlantDiseasePredictor
 
-__all__ = ["HierarchicalPredictor", "ModelNotReadyError"]
+__all__ = ["PlantDiseasePredictor", "HierarchicalPredictor", "ModelNotReadyError"]

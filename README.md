@@ -1,55 +1,33 @@
-# Wheat Disease Detection
+# Plant Validation and Disease Detection
 
-This repo now uses one canonical ML structure:
+This repo now uses a two-model computer-vision pipeline:
 
-- `model/` contains the training and hierarchical inference code.
-- `plant_health/` contains the user upload pipeline for Django.
-- root `train.py` and `inference.py` are thin entrypoints only.
+1. `validation` model: `plant` vs `non_plant`
+2. `disease` model: `healthy`, `rust`, `blight`, `mildew`, `spot`
 
-## Hierarchical model flow
+The training and preprocessing flow lives in `model/train.py`, and inference lives in `model/inference.py`. Root `train.py` and `predict.py` are CLI entrypoints.
 
-When a user uploads an image, the pipeline works like this:
+## Dataset Structure
 
-1. Run image quality checks.
-2. Stage 1 predicts `healthy` vs `diseased`.
-3. If diseased, Stage 2 predicts the disease type:
-   `rust`, `blight`, `mildew`, or `spot`.
-4. Django formats the result into farmer-friendly advice.
-
-## Dataset layout
-
-Stage 1 training data:
+Processed validation data:
 
 ```text
-training/data/processed/stage1/
+training/data/processed/validation/
   train/
-    healthy/
-    diseased/
+    plant/
+    non_plant/
   val/
-    healthy/
-    diseased/
+    plant/
+    non_plant/
+  test/
+    plant/
+    non_plant/
 ```
 
-Stage 2 training data:
+Processed disease data:
 
 ```text
-training/data/processed/stage2/
-  train/
-    rust/
-    blight/
-    mildew/
-    spot/
-  val/
-    rust/
-    blight/
-    mildew/
-    spot/
-```
-
-Existing flat layout is also supported and will be used automatically if present:
-
-```text
-training/data/processed/
+training/data/processed/disease/
   train/
     healthy/
     rust/
@@ -70,6 +48,17 @@ training/data/processed/
     spot/
 ```
 
+Raw disease data should be labeled by class folder:
+
+```text
+training/data/raw/wheat_disease/
+  healthy/
+  rust/
+  blight/
+  mildew/
+  spot/
+```
+
 ## Training
 
 Install dependencies:
@@ -78,26 +67,39 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-Train Stage 1:
+Prepare and train the plant-vs-non-plant model:
 
 ```bash
-python train.py --stage stage1
+python train.py --stage validation --prepare
 ```
 
-Train Stage 2:
+Prepare and train the disease model:
 
 ```bash
-python train.py --stage stage2
+python train.py --stage disease --prepare --disease-source "C:\path\to\wheat_dataset"
 ```
 
-Checkpoints are written to `training/checkpoints/`.
+Train both models:
+
+```bash
+python train.py --stage all --prepare --disease-source "C:\path\to\wheat_dataset"
+```
+
+Use `--architecture mobilenet_v2` for faster demo inference or `--architecture resnet18` if you want a slightly heavier backbone.
 
 ## Inference
 
-Run hierarchical inference from the command line:
+Run command-line inference:
 
 ```bash
-python inference.py --image path/to/image.jpg --json
+python predict.py --image path/to/image.jpg --json
 ```
+
+The JSON response includes:
+
+- `status`
+- `quality`
+- `validation`
+- `prediction`
 
 The Django upload endpoint is available at `POST /plant-health/diagnose/` with a multipart `image` file.

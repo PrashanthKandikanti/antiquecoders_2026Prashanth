@@ -1,4 +1,4 @@
-"""CLI entrypoint for canonical hierarchical inference."""
+"""Backward-compatible CLI entrypoint for plant validation and disease inference."""
 
 from model.inference import main
 

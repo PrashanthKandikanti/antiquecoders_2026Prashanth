@@ -7,13 +7,13 @@ from typing import Any
 
 from PIL import Image, UnidentifiedImageError
 
-from model.inference import HierarchicalPredictor, ModelNotReadyError
+from model.inference import ModelNotReadyError, PlantDiseasePredictor
 from plant_health.knowledge import get_disease_guidance
 
 
 @lru_cache(maxsize=1)
-def get_predictor() -> HierarchicalPredictor:
-    return HierarchicalPredictor()
+def get_predictor() -> PlantDiseasePredictor:
+    return PlantDiseasePredictor()
 
 
 def _confidence_percent(score: float | None) -> str:
@@ -27,13 +27,17 @@ def enrich_prediction(prediction: dict[str, Any]) -> dict[str, Any]:
     guidance = get_disease_guidance(disease_code)
 
     if prediction["status"] in {"ok", "uncertain"}:
+        explanation = guidance.get(
+            "explanation",
+            "The model completed the analysis, but there is no guidance text for this label yet.",
+        )
+        if disease_code == "healthy":
+            explanation = "The uploaded plant image appears healthy with no visible disease symptoms."
+
         prediction = {
             **prediction,
             "confidence_percent": _confidence_percent(prediction.get("confidence")),
-            "explanation": guidance.get(
-                "explanation",
-                "The model completed the analysis, but there is no guidance text for this label yet.",
-            ),
+            "explanation": explanation,
             "treatment": guidance.get("treatment", []),
             "organic_treatment": guidance.get("organic_treatment", []),
             "chemical_treatment": guidance.get("chemical_treatment", []),
@@ -70,17 +74,11 @@ def format_prediction_for_chat(prediction: dict[str, Any]) -> str:
     if status == "model_not_ready":
         return (
             "The upload pipeline is ready, but the model weights are missing. "
-            "Train the `gate`, `stage1`, and `stage2` models first, then upload the image again."
+            "Train the `validation` and `disease` models first, then upload the image again."
         )
 
     if status == "error":
         return prediction.get("message", "The image could not be processed.")
-
-    if status == "unsupported_crop":
-        return (
-            "We are working on support for leaves other than wheat. "
-            "Please upload a wheat leaf image for now."
-        )
 
     if status == "invalid_subject":
         return "Please upload only plant leaf images. Non-plant images are not supported."

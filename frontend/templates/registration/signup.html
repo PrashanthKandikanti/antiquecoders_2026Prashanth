@@ -32,7 +32,7 @@
             type="text"
             required
             value="{{ form_data.name|default:'' }}"
-            class="w-full rounded-2xl border border-white/20 bg-white/12 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-[#faf7f2] lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
+            class="w-full rounded-2xl border border-white/20 bg-white/25 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-white/95 lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
             placeholder="Your full name"
         >
     </div>
@@ -45,7 +45,7 @@
                 type="email"
                 required
                 value="{{ form_data.email|default:'' }}"
-                class="w-full rounded-2xl border border-white/20 bg-white/12 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-[#faf7f2] lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
+                class="w-full rounded-2xl border border-white/20 bg-white/25 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-white/95 lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
                 placeholder="you@example.com"
             >
         </div>
@@ -55,7 +55,7 @@
                 name="phone"
                 type="text"
                 value="{{ form_data.phone|default:'' }}"
-                class="w-full rounded-2xl border border-white/20 bg-white/12 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-[#faf7f2] lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
+                class="w-full rounded-2xl border border-white/20 bg-white/25 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-white/95 lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
                 placeholder="+91xxxxxxxxxx"
             >
         </div>
@@ -67,7 +67,7 @@
             name="current_crop"
             type="text"
             value="{{ form_data.current_crop|default:'' }}"
-            class="w-full rounded-2xl border border-white/20 bg-white/12 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-[#faf7f2] lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
+            class="w-full rounded-2xl border border-white/20 bg-white/25 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-white/95 lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
             placeholder="Wheat, paddy, cotton..."
         >
     </div>
@@ -83,7 +83,7 @@
                     pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}"
                     title="{{ password_hint }}"
                     required
-                    class="w-full rounded-2xl border border-white/20 bg-white/12 px-4 py-3 pr-12 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-[#faf7f2] lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
+                    class="w-full rounded-2xl border border-white/20 bg-white/25 px-4 py-3 pr-12 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-white/95 lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
                     placeholder="Create a strong password"
                 >
                 <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-3 inline-flex items-center text-white/65 transition hover:text-white lg:text-black/45 lg:hover:text-black dark:text-white/50 dark:hover:text-white" aria-label="Toggle password visibility">
@@ -100,7 +100,7 @@
                     name="password2"
                     :type="showPassword ? 'text' : 'password'"
                     required
-                    class="w-full rounded-2xl border border-white/20 bg-white/12 px-4 py-3 pr-12 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-[#faf7f2] lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
+                    class="w-full rounded-2xl border border-white/20 bg-white/25 px-4 py-3 pr-12 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-white/95 lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
                     placeholder="Repeat your password"
                 >
                 <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-3 inline-flex items-center text-white/65 transition hover:text-white lg:text-black/45 lg:hover:text-black dark:text-white/50 dark:hover:text-white" aria-label="Toggle password visibility">

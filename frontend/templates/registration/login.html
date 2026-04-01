@@ -2,7 +2,6 @@
 
 {% block title %}Login - AntiqueCoders{% endblock %}
 {% block auth_heading %}Welcome back{% endblock %}
-{% block auth_subheading %}Log in with your email or phone number to continue into the AI crop assistant.{% endblock %}
 
 {% block auth_form %}
 <form method="post" class="space-y-5">
@@ -32,7 +31,7 @@
             type="text"
             value="{{ identifier|default:'' }}"
             required
-            class="w-full rounded-2xl border border-white/20 bg-white/12 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-[#faf7f2] lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
+            class="w-full rounded-2xl border border-white/20 bg-white/25 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-white/95 lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
             placeholder="you@example.com or +91xxxxxxxxxx"
         >
     </div>
@@ -44,7 +43,7 @@
                 name="password"
                 :type="showPassword ? 'text' : 'password'"
                 required
-                class="w-full rounded-2xl border border-white/20 bg-white/12 px-4 py-3 pr-12 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-[#faf7f2] lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
+                class="w-full rounded-2xl border border-white/20 bg-white/25 px-4 py-3 pr-12 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-white/95 lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
                 placeholder="Enter your password"
             >
             <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-3 inline-flex items-center text-white/65 transition hover:text-white lg:text-black/45 lg:hover:text-black dark:text-white/50 dark:hover:text-white" aria-label="Toggle password visibility">

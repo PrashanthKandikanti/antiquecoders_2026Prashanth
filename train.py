@@ -1,4 +1,4 @@
-"""CLI entrypoint for the canonical hierarchical training pipeline."""
+"""CLI entrypoint for the plant validation and disease training pipeline."""
 
 from model.train import main
 
