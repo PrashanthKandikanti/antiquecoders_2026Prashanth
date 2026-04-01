@@ -153,7 +153,7 @@
     {% endif %}
 
     <!-- Input Box -->
-    <form method="POST" action="/" class="w-full max-w-[768px] relative mx-auto mt-6">
+    <form method="POST" action="/" enctype="multipart/form-data" class="w-full max-w-[768px] relative mx-auto mt-6">
         {% csrf_token %}
         <div class="relative flex items-end bg-light-surface dark:bg-dark-surface rounded-[24px] p-2 transition-all shadow-sm border border-transparent dark:border-dark-border">
             <!-- Left Actions -->
@@ -177,12 +177,12 @@
                     </svg>
                 </button>
                 <!-- Hidden file input used by camera/image buttons -->
-                <input id="__image_picker" type="file" accept="image/*" style="display:none" />
+                <input id="__image_picker" name="image" type="file" accept="image/*" style="display:none" />
             </div>
 
             <!-- Text Input Wrapper to allow multiline-like spacing -->
             <div class="flex-1 px-1 py-[14px] min-h-[52px]">
-                <input type="text" id="promptInput" name="prompt" required autocomplete="off" placeholder="Upload plant image or ask anything" 
+                <input type="text" id="promptInput" name="prompt" autocomplete="off" placeholder="Upload plant image or ask anything" 
                        class="w-full bg-transparent border-none outline-none focus:ring-0 text-gray-800 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 text-[16px]">
             </div>
 
@@ -271,12 +271,11 @@ function openFilePicker(isCamera) {
     input.onchange = (ev) => {
         const file = ev.target.files && ev.target.files[0];
         if (!file) return;
-        // show filename in text input as a lightweight placeholder
+        // show filename in the text input so the same form can submit prompt and image
         const promptInput = document.getElementById('promptInput');
         if (promptInput) {
-            promptInput.value = `Uploaded image: ${file.name}`;
+            promptInput.value = `Analyze this image: ${file.name}`;
         }
-        // Optionally, you could upload the file via fetch() to a dedicated endpoint.
     };
     input.click();
 }

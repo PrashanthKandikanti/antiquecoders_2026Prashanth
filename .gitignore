@@ -1,22 +1,22 @@
-<<<<<<< HEAD
 node_modules/
 frontend/node_modules/
+
 training/data/raw/*
 !training/data/raw/.gitkeep
 training/data/processed/*
 !training/data/processed/.gitkeep
-training/models/*
-!training/models/.gitkeep
-backend/.env
+training/checkpoints/*
+!training/checkpoints/.gitkeep
+training/artifacts/*
+!training/artifacts/.gitkeep
+
 .env
+backend/.env
 *.pyc
 __pycache__/
+
 backend_output.txt
 django_out.txt
 server_log.txt
 server_output.txt
 server_output_utf8.txt
-=======
-# Ignore processed training data artifacts
-training/data/processed/
->>>>>>> 20ea8379c4dc40c60511061a28dda0e9d23993f9

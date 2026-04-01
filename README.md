@@ -1,48 +1,103 @@
-# Wheat Disease Detection (PyTorch)
+# Wheat Disease Detection
 
-This repository implements a robust PyTorch image-classification pipeline for wheat plant disease detection using MobileNetV3-Large (ImageNet pretrained) and strong train-time augmentation. The code is organized, modular and built with deployment in mind (TorchScript export).
+This repo now uses one canonical ML structure:
 
-Quick start
+- `model/` contains the training and hierarchical inference code.
+- `plant_health/` contains the user upload pipeline for Django.
+- root `train.py` and `inference.py` are thin entrypoints only.
 
-1. Install dependencies (recommended: virtualenv)
+## Hierarchical model flow
+
+When a user uploads an image, the pipeline works like this:
+
+1. Run image quality checks.
+2. Stage 1 predicts `healthy` vs `diseased`.
+3. If diseased, Stage 2 predicts the disease type:
+   `rust`, `blight`, `mildew`, or `spot`.
+4. Django formats the result into farmer-friendly advice.
+
+## Dataset layout
+
+Stage 1 training data:
+
+```text
+training/data/processed/stage1/
+  train/
+    healthy/
+    diseased/
+  val/
+    healthy/
+    diseased/
+```
+
+Stage 2 training data:
+
+```text
+training/data/processed/stage2/
+  train/
+    rust/
+    blight/
+    mildew/
+    spot/
+  val/
+    rust/
+    blight/
+    mildew/
+    spot/
+```
+
+Existing flat layout is also supported and will be used automatically if present:
+
+```text
+training/data/processed/
+  train/
+    healthy/
+    rust/
+    blight/
+    mildew/
+    spot/
+  val/
+    healthy/
+    rust/
+    blight/
+    mildew/
+    spot/
+  test/
+    healthy/
+    rust/
+    blight/
+    mildew/
+    spot/
+```
+
+## Training
+
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Prepare dataset with structure:
-
-```
-dataset/
-  train/
-    class_a/
-    class_b/
-  val/
-  test/
-```
-
-3. Train
+Train Stage 1:
 
 ```bash
-python train.py
+python train.py --stage stage1
 ```
 
-4. Inference
+Train Stage 2:
 
 ```bash
-python inference.py --image path/to/image.jpg
+python train.py --stage stage2
 ```
 
-Files
-- `dataset.py`: data loaders and transforms
-- `model.py`: MobileNetV3 model builder
-- `train.py`: training loop and orchestration
-- `utils.py`: metrics, plotting and helpers
-- `inference.py`: single-image inference script
-- `config.py`: hyperparameters and paths
+Checkpoints are written to `training/checkpoints/`.
 
-Notes
-- The model saves `models/best_model.pth` and attempts to export a TorchScript file for deployment.
-- Validation/test transforms do not apply augmentations.
-# antiquecoders_2026
-24hours Hackthon 
+## Inference
+
+Run hierarchical inference from the command line:
+
+```bash
+python inference.py --image path/to/image.jpg --json
+```
+
+The Django upload endpoint is available at `POST /plant-health/diagnose/` with a multipart `image` file.

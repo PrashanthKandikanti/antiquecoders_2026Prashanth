@@ -3,10 +3,11 @@ import re
 from django.shortcuts import redirect, render
 
 from .models import ChatQuery
-from django.contrib.auth import login as auth_login, authenticate, logout as auth_logout
+from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from .models import UserProfile
+from plant_health.services import diagnose_uploaded_image, format_prediction_for_chat
 
 GREETING_MESSAGES = {
     "hi",
@@ -54,9 +55,19 @@ def home(request):
     
     if request.method == "POST":
         prompt = request.POST.get('prompt', '').strip()
-        if prompt:
+        uploaded_image = request.FILES.get("image")
+
+        if uploaded_image:
+            diagnosis = diagnose_uploaded_image(uploaded_image)
+            response = format_prediction_for_chat(diagnosis)
+            if not prompt:
+                prompt = f"Uploaded image: {uploaded_image.name}"
+            ChatQuery.objects.create(session_key=session_key, prompt=prompt, response=response)
+        elif prompt:
             response = _build_response(prompt)
             ChatQuery.objects.create(session_key=session_key, prompt=prompt, response=response)
+        else:
+            return redirect('home')
         return redirect('home')
 
     history = ChatQuery.objects.filter(session_key=session_key)
