@@ -1,4 +1,4 @@
-"""Hierarchical inference helpers for user-uploaded wheat leaf images."""
+"""Inference helpers for upload gating and hierarchical wheat leaf diagnosis."""
 
 from __future__ import annotations
 
@@ -18,6 +18,9 @@ from model.constants import (
     DEFAULT_TOP_K,
     DISEASE_CLASS_NAMES,
     DISPLAY_NAMES,
+    GATE_CHECKPOINT,
+    GATE_CLASS_NAMES,
+    GATE_REJECTION_THRESHOLD,
     IMAGENET_MEAN,
     IMAGENET_STD,
     INPUT_SIZE,
@@ -48,22 +51,27 @@ def build_inference_transform() -> transforms.Compose:
 
 
 class HierarchicalPredictor:
-    """Two-stage predictor used by the user upload flow."""
+    """Gate + hierarchical predictor used by the user upload flow."""
 
     def __init__(
         self,
+        gate_path: Path = GATE_CHECKPOINT,
         stage1_path: Path = STAGE1_CHECKPOINT,
         stage2_path: Path = STAGE2_CHECKPOINT,
         device: str | None = None,
+        gate_rejection_threshold: float = GATE_REJECTION_THRESHOLD,
         healthy_threshold: float = STAGE1_HEALTHY_THRESHOLD,
         disease_threshold: float = STAGE2_CONFIDENCE_THRESHOLD,
     ) -> None:
+        self.gate_path = Path(gate_path)
         self.stage1_path = Path(stage1_path)
         self.stage2_path = Path(stage2_path)
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
+        self.gate_rejection_threshold = gate_rejection_threshold
         self.healthy_threshold = healthy_threshold
         self.disease_threshold = disease_threshold
         self.transform = build_inference_transform()
+        self._gate_bundle: tuple[torch.nn.Module, list[str]] | None = None
         self._stage1_bundle: tuple[torch.nn.Module, list[str]] | None = None
         self._stage2_bundle: tuple[torch.nn.Module, list[str]] | None = None
 
@@ -75,7 +83,7 @@ class HierarchicalPredictor:
         if not checkpoint_path.exists():
             raise ModelNotReadyError(
                 f"Missing checkpoint: {checkpoint_path}. "
-                "Train the hierarchical models before using image upload."
+                "Train the upload gate and wheat diagnosis models before using image upload."
             )
 
         checkpoint = torch.load(checkpoint_path, map_location="cpu")
@@ -86,6 +94,11 @@ class HierarchicalPredictor:
         model.to(self.device)
         model.eval()
         return model, class_names
+
+    def _get_gate_bundle(self) -> tuple[torch.nn.Module, list[str]]:
+        if self._gate_bundle is None:
+            self._gate_bundle = self._load_bundle(self.gate_path, GATE_CLASS_NAMES)
+        return self._gate_bundle
 
     def _get_stage1_bundle(self) -> tuple[torch.nn.Module, list[str]]:
         if self._stage1_bundle is None:
@@ -168,6 +181,33 @@ class HierarchicalPredictor:
 
         image_tensor = self._prepare_tensor(image)
 
+        gate_model, gate_class_names = self._get_gate_bundle()
+        gate_probs = self._predict_probabilities(gate_model, image_tensor)
+        gate_top = self._top_predictions(gate_probs, gate_class_names, topk=min(topk, len(gate_class_names)))
+        gate_best = gate_top[0]
+
+        if gate_best["code"] == "non_plant" and gate_best["score"] >= self.gate_rejection_threshold:
+            return {
+                "status": "invalid_subject",
+                "message": "Please upload only plant leaf images.",
+                "reason": "The uploaded image does not appear to be a plant leaf.",
+                "quality": quality,
+                "gate": {
+                    "top_predictions": gate_top,
+                },
+            }
+
+        if gate_best["code"] == "other_plant" and gate_best["score"] >= self.gate_rejection_threshold:
+            return {
+                "status": "unsupported_crop",
+                "message": "We are working on support for leaves other than wheat.",
+                "reason": "The uploaded image looks like a plant leaf, but not a wheat leaf.",
+                "quality": quality,
+                "gate": {
+                    "top_predictions": gate_top,
+                },
+            }
+
         stage1_model, stage1_class_names = self._get_stage1_bundle()
         stage1_probs = self._predict_probabilities(stage1_model, image_tensor)
         stage1_top = self._top_predictions(stage1_probs, stage1_class_names, topk=2)
@@ -183,6 +223,9 @@ class HierarchicalPredictor:
                 "disease_code": "healthy",
                 "confidence": healthy_score,
                 "quality": quality,
+                "gate": {
+                    "top_predictions": gate_top,
+                },
                 "stage1": {
                     "healthy_score": healthy_score,
                     "diseased_score": diseased_score,
@@ -204,6 +247,9 @@ class HierarchicalPredictor:
             "disease_code": best_prediction["code"],
             "confidence": best_prediction["score"],
             "quality": quality,
+            "gate": {
+                "top_predictions": gate_top,
+            },
             "stage1": {
                 "healthy_score": healthy_score,
                 "diseased_score": diseased_score,
@@ -226,7 +272,7 @@ class HierarchicalPredictor:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run hierarchical inference for one wheat leaf image.")
+    parser = argparse.ArgumentParser(description="Run upload gating and hierarchical inference for one image.")
     parser.add_argument("--image", required=True, type=Path)
     parser.add_argument("--topk", type=int, default=DEFAULT_TOP_K)
     parser.add_argument("--json", action="store_true", help="Print the full response as JSON.")

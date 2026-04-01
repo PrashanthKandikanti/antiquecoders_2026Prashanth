@@ -17,5 +17,12 @@ def diagnose_plant(request):
         )
 
     diagnosis = diagnose_uploaded_image(uploaded_image)
-    status_code = 200 if diagnosis.get("status") in {"ok", "uncertain", "reupload", "model_not_ready"} else 400
+    status_code = 200 if diagnosis.get("status") in {
+        "ok",
+        "uncertain",
+        "reupload",
+        "model_not_ready",
+        "unsupported_crop",
+        "invalid_subject",
+    } else 400
     return JsonResponse(diagnosis, status=status_code)

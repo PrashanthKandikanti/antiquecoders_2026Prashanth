@@ -57,7 +57,7 @@ def diagnose_uploaded_image(uploaded_file) -> dict[str, Any]:
     except ModelNotReadyError as exc:
         return {
             "status": "model_not_ready",
-            "message": "The hierarchical models are not trained yet.",
+            "message": "The upload gate or wheat diagnosis models are not trained yet.",
             "reason": str(exc),
         }
 
@@ -69,12 +69,21 @@ def format_prediction_for_chat(prediction: dict[str, Any]) -> str:
 
     if status == "model_not_ready":
         return (
-            "The upload pipeline is ready, but the hierarchical model weights are missing. "
-            "Train `stage1` and `stage2` first, then upload the image again."
+            "The upload pipeline is ready, but the model weights are missing. "
+            "Train the `gate`, `stage1`, and `stage2` models first, then upload the image again."
         )
 
     if status == "error":
         return prediction.get("message", "The image could not be processed.")
+
+    if status == "unsupported_crop":
+        return (
+            "We are working on support for leaves other than wheat. "
+            "Please upload a wheat leaf image for now."
+        )
+
+    if status == "invalid_subject":
+        return "Please upload only plant leaf images. Non-plant images are not supported."
 
     if status == "reupload":
         reason = prediction.get("reason", "Image quality is too low.")

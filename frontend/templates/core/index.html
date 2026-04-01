@@ -98,7 +98,7 @@
                 </button>
 
                 <div x-show="profileOpen" x-transition.opacity class="absolute right-0 mt-3 w-[min(92vw,22rem)] overflow-hidden rounded-3xl border border-light-border bg-light-surface py-2 text-left shadow-[0_18px_45px_rgba(0,0,0,0.14)] dark:border-dark-border dark:bg-dark-surface" style="display: none;" x-cloak>
-                    <div class="border-b border-light-border px-4 py-4 dark:border-dark-border">
+                    <a href="{% url 'account_profile' %}?panel=profile" class="block border-b border-light-border px-4 py-4 transition hover:bg-gray-50 dark:border-dark-border dark:hover:bg-[#1b1b1b]">
                         <div class="flex items-start gap-3">
                             <div class="h-14 w-14 overflow-hidden rounded-full border border-light-border bg-gray-900 text-white dark:border-dark-border dark:bg-white dark:text-black">
                                 {% if profile and profile.profile_image %}
@@ -112,6 +112,7 @@
                             <div class="min-w-0 flex-1">
                                 <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{{ user.get_full_name|default:user.username }}</p>
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 truncate">{{ user.email|default:"No email set" }}</p>
+                                <p class="mt-2 hidden text-[11px] font-medium uppercase tracking-[0.18em] text-gray-400 dark:text-gray-500 sm:block">Open profile page</p>
                                 <div class="mt-3 grid gap-2 text-xs text-gray-600 dark:text-gray-300 sm:hidden">
                                     <div class="rounded-2xl bg-gray-100 px-3 py-2 dark:bg-[#1f1f1f]">
                                         <span class="block text-[10px] uppercase tracking-[0.18em] text-gray-400 dark:text-gray-500">Current crop</span>
@@ -124,10 +125,16 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
                     <div class="py-2">
-                        <a href="{% url 'account_profile' %}?panel=profile" class="block px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-input">Profile</a>
-                        <a href="{% url 'account_settings' %}?panel=language" class="block px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-input">Settings</a>
+                        <a href="{% url 'account_profile' %}?panel=profile" class="hidden px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-input sm:block">Profile</a>
+                        <a href="{% url 'account_settings' %}?panel=language" class="hidden px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-input sm:block">Settings</a>
+                        <div class="grid gap-2 px-4 py-2 sm:hidden">
+                            <a href="{% url 'account_settings' %}?panel=language" class="rounded-2xl bg-gray-100 px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-200 dark:bg-[#1f1f1f] dark:text-gray-200 dark:hover:bg-[#262626]">Language</a>
+                            <a href="{% url 'account_settings' %}?panel=themes" class="rounded-2xl bg-gray-100 px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-200 dark:bg-[#1f1f1f] dark:text-gray-200 dark:hover:bg-[#262626]">Themes</a>
+                            <a href="{% url 'account_settings' %}?panel=password" class="rounded-2xl bg-gray-100 px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-200 dark:bg-[#1f1f1f] dark:text-gray-200 dark:hover:bg-[#262626]">Password</a>
+                            <a href="{% url 'account_settings' %}?panel=support" class="rounded-2xl bg-gray-100 px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-200 dark:bg-[#1f1f1f] dark:text-gray-200 dark:hover:bg-[#262626]">Support</a>
+                        </div>
                         <form method="POST" action="{% url 'logout' %}">
                             {% csrf_token %}
                             <button type="submit" class="block w-full px-4 py-2 text-left text-sm text-red-600 transition hover:bg-gray-100 dark:text-red-400 dark:hover:bg-dark-input">Logout</button>
@@ -203,7 +210,7 @@
 
             <!-- Text Input Wrapper to allow multiline-like spacing -->
             <div class="flex-1 px-1 py-[14px] min-h-[52px]">
-                <input type="text" id="promptInput" name="prompt" autocomplete="off" placeholder="Upload plant image or ask anything" 
+                <input type="text" id="promptInput" name="prompt" autocomplete="off" placeholder="Upload a wheat leaf image or ask anything" 
                        class="w-full bg-transparent border-none outline-none focus:ring-0 text-gray-800 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 text-[16px]">
             </div>
 

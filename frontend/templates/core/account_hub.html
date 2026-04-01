@@ -6,7 +6,7 @@
 {% block content %}
 <div class="flex-1 overflow-hidden bg-[#f5f1e8] dark:bg-[#0b0b0b]">
     <div class="flex h-screen flex-col lg:flex-row">
-        <aside class="flex w-full flex-col border-b border-black/10 bg-white/80 backdrop-blur lg:w-[320px] lg:border-b-0 lg:border-r dark:border-white/10 dark:bg-[#101010]/95">
+        <aside class="hidden w-full flex-col border-b border-black/10 bg-white/80 backdrop-blur lg:flex lg:w-[320px] lg:border-b-0 lg:border-r dark:border-white/10 dark:bg-[#101010]/95">
             <div class="border-b border-black/10 px-6 py-6 dark:border-white/10">
                 <a href="{% url 'home' %}" class="text-xs font-medium uppercase tracking-[0.24em] text-black/45 transition hover:text-black dark:text-white/45 dark:hover:text-white">Back to home</a>
                 <div class="mt-5 flex items-center gap-4">
@@ -56,6 +56,61 @@
 
         <main class="flex-1 overflow-y-auto bg-[#fbf8f3] px-4 py-5 dark:bg-[#080808] sm:px-6 lg:px-8">
             <div class="mx-auto max-w-5xl">
+                <section x-data="{ quickOpen: false }" class="mb-5 rounded-[28px] border border-black/10 bg-white/90 p-5 shadow-[0_20px_70px_rgba(20,20,20,0.08)] dark:border-white/10 dark:bg-[#121212] lg:hidden">
+                    <a href="{% url 'home' %}" class="text-xs font-medium uppercase tracking-[0.24em] text-black/45 transition hover:text-black dark:text-white/45 dark:hover:text-white">Back to home</a>
+                    <div class="mt-4 flex items-center gap-4">
+                        <div class="h-16 w-16 overflow-hidden rounded-full border border-black/10 bg-[#171717] dark:border-white/10 dark:bg-white">
+                            {% if profile.profile_image %}
+                            <img src="{{ profile.profile_image.url }}" alt="{{ user.first_name|default:user.username }}" class="h-full w-full object-cover">
+                            {% else %}
+                            <div class="flex h-full w-full items-center justify-center text-xl font-semibold text-white dark:text-black">
+                                {{ user.first_name|default:user.username|slice:":1"|upper }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <a href="{% url 'account_profile' %}?panel=profile" class="block truncate text-lg font-semibold text-[#171717] transition hover:text-black dark:text-white dark:hover:text-white">
+                                {{ user.first_name|default:user.username }}
+                            </a>
+                            <p class="truncate text-sm text-black/55 dark:text-white/55">{{ user.email|default:"No email added yet" }}</p>
+                            <p class="mt-1 text-xs text-black/45 dark:text-white/45">Tap the name to open the dedicated profile page.</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 rounded-3xl bg-[#f3ede3] p-4 dark:bg-[#171717]">
+                        <div class="grid gap-3 text-sm">
+                            <div>
+                                <span class="block text-[10px] uppercase tracking-[0.18em] text-black/40 dark:text-white/40">Current crop</span>
+                                <span class="mt-1 block text-[#171717] dark:text-white">{{ profile.current_crop|default:"Not set" }}</span>
+                            </div>
+                            <div>
+                                <span class="block text-[10px] uppercase tracking-[0.18em] text-black/40 dark:text-white/40">Phone number</span>
+                                <span class="mt-1 block text-[#171717] dark:text-white">{{ profile.phone_number|default:"Not set" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="button" @click="quickOpen = !quickOpen" class="flex w-full items-center justify-between rounded-2xl border border-black/10 bg-[#faf7f2] px-4 py-3 text-left text-sm font-medium text-[#171717] transition hover:bg-[#f2ecdf] dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:hover:bg-[#202020]">
+                            <span>Quick access</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition" :class="quickOpen ? 'rotate-180' : ''" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
+                            </svg>
+                        </button>
+                        <div x-show="quickOpen" x-transition class="mt-3 grid gap-2" style="display: none;" x-cloak>
+                            <a href="{% url 'account_profile' %}?panel=profile" class="rounded-2xl bg-[#faf7f2] px-4 py-3 text-sm font-medium text-[#171717] transition hover:bg-[#f2ecdf] dark:bg-[#1a1a1a] dark:text-white dark:hover:bg-[#202020]">Profile</a>
+                            <a href="{% url 'account_settings' %}?panel=language" class="rounded-2xl bg-[#faf7f2] px-4 py-3 text-sm font-medium text-[#171717] transition hover:bg-[#f2ecdf] dark:bg-[#1a1a1a] dark:text-white dark:hover:bg-[#202020]">Language</a>
+                            <a href="{% url 'account_settings' %}?panel=themes" class="rounded-2xl bg-[#faf7f2] px-4 py-3 text-sm font-medium text-[#171717] transition hover:bg-[#f2ecdf] dark:bg-[#1a1a1a] dark:text-white dark:hover:bg-[#202020]">Themes</a>
+                            <a href="{% url 'account_settings' %}?panel=password" class="rounded-2xl bg-[#faf7f2] px-4 py-3 text-sm font-medium text-[#171717] transition hover:bg-[#f2ecdf] dark:bg-[#1a1a1a] dark:text-white dark:hover:bg-[#202020]">Password change</a>
+                            <a href="{% url 'account_settings' %}?panel=support" class="rounded-2xl bg-[#faf7f2] px-4 py-3 text-sm font-medium text-[#171717] transition hover:bg-[#f2ecdf] dark:bg-[#1a1a1a] dark:text-white dark:hover:bg-[#202020]">Support</a>
+                            <form method="post" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full rounded-2xl bg-red-50 px-4 py-3 text-left text-sm font-medium text-red-700 transition hover:bg-red-100 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/20">Logout</button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
                 {% if messages %}
                 <div class="mb-5 space-y-2">
                     {% for message in messages %}

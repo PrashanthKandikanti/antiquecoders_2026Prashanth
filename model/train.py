@@ -1,4 +1,4 @@
-"""Hierarchical EfficientNetB0 training pipeline for wheat disease classification."""
+"""Training pipeline for the upload gate and hierarchical wheat disease models."""
 
 from __future__ import annotations
 
@@ -19,8 +19,13 @@ from model.constants import (
     DATA_DIR,
     DISEASE_CLASS_NAMES,
     DISPLAY_NAMES,
+    GATE_CHECKPOINT,
+    GATE_CLASS_NAMES,
+    GATE_DATA_DIR,
+    GATE_METRICS_PATH,
     LEGACY_TRAIN_DIR,
     LEGACY_VAL_DIR,
+    RAW_DATA_DIR,
     STAGE1_CHECKPOINT,
     STAGE1_CLASS_NAMES,
     STAGE1_DATA_DIR,
@@ -38,6 +43,7 @@ from model.dataset import (
 from model.losses import FocalLoss
 from model.metrics import calculate_classification_metrics
 from model.network import build_efficientnet_b0
+from model.preprocessing import prepare_processed_datasets
 
 
 @dataclass(frozen=True)
@@ -48,9 +54,19 @@ class StageConfig:
     data_dir: Path
     output: Path
     metrics_output: Path
+    supports_legacy_flat: bool = False
 
 
 def get_stage_config(stage: str) -> StageConfig:
+    if stage == "gate":
+        return StageConfig(
+            stage="gate",
+            title="Wheat vs Other Plant vs Non-Plant",
+            class_names=GATE_CLASS_NAMES,
+            data_dir=GATE_DATA_DIR,
+            output=GATE_CHECKPOINT,
+            metrics_output=GATE_METRICS_PATH,
+        )
     if stage == "stage1":
         return StageConfig(
             stage="stage1",
@@ -59,21 +75,26 @@ def get_stage_config(stage: str) -> StageConfig:
             data_dir=STAGE1_DATA_DIR,
             output=STAGE1_CHECKPOINT,
             metrics_output=STAGE1_METRICS_PATH,
+            supports_legacy_flat=True,
         )
-
-    return StageConfig(
-        stage="stage2",
-        title="Disease Type",
-        class_names=DISEASE_CLASS_NAMES,
-        data_dir=STAGE2_DATA_DIR,
-        output=STAGE2_CHECKPOINT,
-        metrics_output=STAGE2_METRICS_PATH,
-    )
+    if stage == "stage2":
+        return StageConfig(
+            stage="stage2",
+            title="Disease Type",
+            class_names=DISEASE_CLASS_NAMES,
+            data_dir=STAGE2_DATA_DIR,
+            output=STAGE2_CHECKPOINT,
+            metrics_output=STAGE2_METRICS_PATH,
+            supports_legacy_flat=True,
+        )
+    raise ValueError(f"Unsupported stage: {stage}")
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Train a hierarchical wheat disease classifier.")
-    parser.add_argument("--stage", choices=["stage1", "stage2"], default="stage1")
+    parser = argparse.ArgumentParser(
+        description="Prepare datasets and train the upload gate / hierarchical wheat classifiers."
+    )
+    parser.add_argument("--stage", choices=["gate", "stage1", "stage2", "all"], default="stage1")
     parser.add_argument("--data-dir", type=Path, default=None)
     parser.add_argument("--output", type=Path, default=None)
     parser.add_argument("--metrics-output", type=Path, default=None)
@@ -85,6 +106,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss", choices=["weighted_ce", "focal"], default="weighted_ce")
     parser.add_argument("--freeze-backbone-epochs", type=int, default=2)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--prepare", action="store_true", help="Create processed train/val/test splits from raw data first.")
+    parser.add_argument("--prepare-only", action="store_true", help="Only run preprocessing, then exit.")
+    parser.add_argument("--raw-data-dir", type=Path, default=RAW_DATA_DIR)
+    parser.add_argument("--force-prepare", action="store_true", help="Rebuild processed datasets even if they already exist.")
     return parser.parse_args()
 
 
@@ -195,8 +220,8 @@ def _is_flat_dataset_root(data_dir: Path) -> bool:
         return False
 
     required = {"healthy", "rust", "blight", "mildew", "spot"}
-    train_dirs = {path.name.lower() for path in train_root.iterdir() if path.is_dir()} if train_root.exists() else set()
-    val_dirs = {path.name.lower() for path in val_root.iterdir() if path.is_dir()} if val_root.exists() else set()
+    train_dirs = {path.name.lower() for path in train_root.iterdir() if path.is_dir()}
+    val_dirs = {path.name.lower() for path in val_root.iterdir() if path.is_dir()}
     return required.issubset(train_dirs) and required.issubset(val_dirs)
 
 
@@ -206,7 +231,7 @@ def build_stage_datasets(stage_config: StageConfig, explicit_data_dir: Path | No
 
     if explicit_data_dir is not None:
         data_dir = explicit_data_dir
-        if _is_flat_dataset_root(data_dir):
+        if stage_config.supports_legacy_flat and _is_flat_dataset_root(data_dir):
             train_dataset = LegacyFlatWheatDiseaseDataset(
                 data_dir / "train",
                 stage=stage_config.stage,
@@ -245,7 +270,7 @@ def build_stage_datasets(stage_config: StageConfig, explicit_data_dir: Path | No
         )
         return train_dataset, val_dataset, data_dir, "hierarchical"
 
-    if _is_flat_dataset_root(DATA_DIR):
+    if stage_config.supports_legacy_flat and _is_flat_dataset_root(DATA_DIR):
         train_dataset = LegacyFlatWheatDiseaseDataset(
             LEGACY_TRAIN_DIR,
             stage=stage_config.stage,
@@ -260,19 +285,21 @@ def build_stage_datasets(stage_config: StageConfig, explicit_data_dir: Path | No
 
     raise FileNotFoundError(
         "No supported dataset layout found. "
-        f"Checked hierarchical folders under {stage_config.data_dir} and "
-        f"legacy flat folders under {DATA_DIR}."
+        f"Checked processed folders under {stage_config.data_dir} "
+        f"and legacy flat folders under {DATA_DIR}."
     )
 
 
-def main() -> None:
-    args = parse_args()
-    set_seed(args.seed)
-
-    stage_config = get_stage_config(args.stage)
-    output_path = args.output or stage_config.output
-    metrics_output = args.metrics_output or stage_config.metrics_output
-    explicit_data_dir = args.data_dir
+def train_stage(
+    stage_config: StageConfig,
+    args: argparse.Namespace,
+    *,
+    explicit_data_dir: Path | None = None,
+    output_override: Path | None = None,
+    metrics_override: Path | None = None,
+) -> dict[str, object]:
+    output_path = output_override or stage_config.output
+    metrics_output = metrics_override or stage_config.metrics_output
 
     train_dataset, val_dataset, data_dir, layout_name = build_stage_datasets(
         stage_config,
@@ -307,9 +334,9 @@ def main() -> None:
     criterion = create_loss(args.loss, class_weights, device)
 
     best_val_accuracy = -1.0
-    history: list[dict] = []
+    history: list[dict[str, object]] = []
 
-    print(f"Using device: {device}")
+    print(f"\nUsing device: {device}")
     print(f"Training stage: {stage_config.stage} ({stage_config.title})")
     print(f"Data directory: {data_dir}")
     print(f"Dataset layout: {layout_name}")
@@ -400,6 +427,49 @@ def main() -> None:
 
     print(f"Saved training history to {metrics_output}")
     print("Final best validation accuracy:", f"{best_val_accuracy:.4f}")
+
+    return {
+        "stage": stage_config.stage,
+        "checkpoint": str(output_path),
+        "metrics_output": str(metrics_output),
+        "best_val_accuracy": best_val_accuracy,
+        "dataset_layout": layout_name,
+    }
+
+
+def main() -> None:
+    args = parse_args()
+    set_seed(args.seed)
+
+    if args.prepare or args.prepare_only:
+        summary = prepare_processed_datasets(
+            raw_data_dir=args.raw_data_dir,
+            seed=args.seed,
+            force=args.force_prepare,
+        )
+        print("Prepared dataset summary:")
+        print(json.dumps(summary, indent=2))
+        if args.prepare_only:
+            return
+
+    stages = ["gate", "stage1", "stage2"] if args.stage == "all" else [args.stage]
+    results: list[dict[str, object]] = []
+
+    for stage_name in stages:
+        stage_config = get_stage_config(stage_name)
+        results.append(
+            train_stage(
+                stage_config,
+                args,
+                explicit_data_dir=args.data_dir,
+                output_override=args.output if len(stages) == 1 else None,
+                metrics_override=args.metrics_output if len(stages) == 1 else None,
+            )
+        )
+
+    if len(results) > 1:
+        print("\nTraining summary:")
+        print(json.dumps(results, indent=2))
 
 
 if __name__ == "__main__":
