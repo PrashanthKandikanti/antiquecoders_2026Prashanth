@@ -1,0 +1,257 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Account - AntiqueCoders{% endblock %}
+{% block sidebar_enabled %}false{% endblock %}
+
+{% block content %}
+<div class="flex-1 overflow-hidden bg-[#f5f1e8] dark:bg-[#0b0b0b]">
+    <div class="flex h-screen flex-col lg:flex-row">
+        <aside class="flex w-full flex-col border-b border-black/10 bg-white/80 backdrop-blur lg:w-[320px] lg:border-b-0 lg:border-r dark:border-white/10 dark:bg-[#101010]/95">
+            <div class="border-b border-black/10 px-6 py-6 dark:border-white/10">
+                <a href="{% url 'home' %}" class="text-xs font-medium uppercase tracking-[0.24em] text-black/45 transition hover:text-black dark:text-white/45 dark:hover:text-white">Back to home</a>
+                <div class="mt-5 flex items-center gap-4">
+                    <div class="h-14 w-14 overflow-hidden rounded-full border border-black/10 bg-[#171717] dark:border-white/10 dark:bg-white">
+                        {% if profile.profile_image %}
+                        <img src="{{ profile.profile_image.url }}" alt="{{ user.first_name|default:user.username }}" class="h-full w-full object-cover">
+                        {% else %}
+                        <div class="flex h-full w-full items-center justify-center text-lg font-semibold text-white dark:text-black">
+                            {{ user.first_name|default:user.username|slice:":1"|upper }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="min-w-0">
+                        <p class="truncate text-lg font-semibold text-[#171717] dark:text-white">{{ user.first_name|default:user.username }}</p>
+                        <p class="truncate text-sm text-black/55 dark:text-white/55">{{ user.email|default:"No email added yet" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 space-y-1 overflow-y-auto px-4 py-4 text-sm">
+                <a href="{% url 'account_profile' %}?panel=profile" class="flex items-center justify-between rounded-2xl px-4 py-3 transition {% if panel == 'profile' %}bg-[#171717] text-white dark:bg-white dark:text-black{% else %}text-[#202020] hover:bg-black/5 dark:text-white/80 dark:hover:bg-white/5{% endif %}">
+                    <span>Profile</span><span class="text-xs opacity-70">Details</span>
+                </a>
+                <a href="{% url 'account_settings' %}?panel=language" class="flex items-center justify-between rounded-2xl px-4 py-3 transition {% if panel == 'language' %}bg-[#171717] text-white dark:bg-white dark:text-black{% else %}text-[#202020] hover:bg-black/5 dark:text-white/80 dark:hover:bg-white/5{% endif %}">
+                    <span>Language</span><span class="text-xs opacity-70">Preference</span>
+                </a>
+                <a href="{% url 'account_settings' %}?panel=themes" class="flex items-center justify-between rounded-2xl px-4 py-3 transition {% if panel == 'themes' %}bg-[#171717] text-white dark:bg-white dark:text-black{% else %}text-[#202020] hover:bg-black/5 dark:text-white/80 dark:hover:bg-white/5{% endif %}">
+                    <span>Themes</span><span class="text-xs opacity-70">Appearance</span>
+                </a>
+                <a href="{% url 'account_settings' %}?panel=password" class="flex items-center justify-between rounded-2xl px-4 py-3 transition {% if panel == 'password' %}bg-[#171717] text-white dark:bg-white dark:text-black{% else %}text-[#202020] hover:bg-black/5 dark:text-white/80 dark:hover:bg-white/5{% endif %}">
+                    <span>Password change</span><span class="text-xs opacity-70">Security</span>
+                </a>
+                <a href="{% url 'account_settings' %}?panel=support" class="flex items-center justify-between rounded-2xl px-4 py-3 transition {% if panel == 'support' %}bg-[#171717] text-white dark:bg-white dark:text-black{% else %}text-[#202020] hover:bg-black/5 dark:text-white/80 dark:hover:bg-white/5{% endif %}">
+                    <span>Support</span><span class="text-xs opacity-70">Help</span>
+                </a>
+            </nav>
+
+            <div class="border-t border-black/10 p-4 dark:border-white/10">
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full rounded-2xl border border-red-500/20 bg-red-50 px-4 py-3 text-left text-sm font-medium text-red-700 transition hover:bg-red-100 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/20">
+                        Logout
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto bg-[#fbf8f3] px-4 py-5 dark:bg-[#080808] sm:px-6 lg:px-8">
+            <div class="mx-auto max-w-5xl">
+                {% if messages %}
+                <div class="mb-5 space-y-2">
+                    {% for message in messages %}
+                    <div class="rounded-2xl border {% if 'error' in message.tags %}border-red-200 bg-red-50 text-red-700 dark:border-red-500/25 dark:bg-red-500/10 dark:text-red-200{% else %}border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-200{% endif %} px-4 py-3 text-sm">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if panel == 'profile' %}
+                <section class="rounded-[28px] border border-black/10 bg-white p-6 shadow-[0_20px_70px_rgba(20,20,20,0.08)] dark:border-white/10 dark:bg-[#121212]">
+                    <div class="mb-8">
+                        <p class="text-xs font-medium uppercase tracking-[0.24em] text-black/45 dark:text-white/45">Profile</p>
+                        <h1 class="mt-2 text-3xl font-semibold tracking-tight text-[#171717] dark:text-white">Farmer details</h1>
+                        <p class="mt-3 text-sm leading-6 text-black/60 dark:text-white/60">
+                            This page keeps the personal details shown from the profile menu in your AI workspace.
+                        </p>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" class="grid gap-5 sm:grid-cols-2" x-data="{ previewUrl: '{% if profile.profile_image %}{{ profile.profile_image.url }}{% endif %}' }">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="profile">
+
+                        <div class="sm:col-span-2 rounded-[28px] bg-[#f3ede3] p-5 dark:bg-[#171717]">
+                            <div class="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
+                                <div class="relative">
+                                    <div x-show="previewUrl" x-cloak class="h-28 w-28 overflow-hidden rounded-full border border-black/10 bg-white dark:border-white/10 dark:bg-[#222222]">
+                                        <img :src="previewUrl" alt="{{ user.first_name|default:user.username }}" class="h-full w-full object-cover">
+                                    </div>
+                                    <div x-show="!previewUrl" class="flex h-28 w-28 items-center justify-center rounded-full border border-black/10 bg-[#171717] text-3xl font-semibold text-white dark:border-white/10 dark:bg-white dark:text-black">
+                                        {{ user.first_name|default:user.username|slice:":1"|upper }}
+                                    </div>
+
+                                    <label class="absolute bottom-0 right-0 inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-[#171717] text-white shadow-lg transition hover:bg-black dark:bg-white dark:text-black dark:hover:bg-[#ebebeb]" aria-label="Edit profile image">
+                                        <input type="file" name="profile_image" accept="image/*" class="hidden" @change="const file = $event.target.files && $event.target.files[0]; if (file) { previewUrl = URL.createObjectURL(file); }">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 20h9"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/>
+                                        </svg>
+                                    </label>
+                                </div>
+
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-[#171717] dark:text-white">Profile photo</p>
+                                    <p class="mt-2 text-sm leading-6 text-black/60 dark:text-white/60">
+                                        Use the edit icon below the image to upload a new profile photo. The same photo appears in the AI home header on mobile and desktop.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-[#171717] dark:text-white">Name</label>
+                            <input name="name" type="text" value="{{ user.first_name|default:'' }}" required class="w-full rounded-2xl border border-black/10 bg-[#faf7f2] px-4 py-3 text-sm outline-none focus:border-black dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white">
+                        </div>
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-[#171717] dark:text-white">Email</label>
+                            <input name="email" type="email" value="{{ user.email|default:'' }}" required class="w-full rounded-2xl border border-black/10 bg-[#faf7f2] px-4 py-3 text-sm outline-none focus:border-black dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white">
+                        </div>
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-[#171717] dark:text-white">Current crop</label>
+                            <input name="current_crop" type="text" value="{{ profile.current_crop|default:'' }}" class="w-full rounded-2xl border border-black/10 bg-[#faf7f2] px-4 py-3 text-sm outline-none focus:border-black dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white" placeholder="Wheat, paddy, cotton...">
+                        </div>
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-[#171717] dark:text-white">Phone number</label>
+                            <input name="phone" type="text" value="{{ profile.phone_number|default:'' }}" class="w-full rounded-2xl border border-black/10 bg-[#faf7f2] px-4 py-3 text-sm outline-none focus:border-black dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white" placeholder="+91xxxxxxxxxx">
+                        </div>
+
+                        <div class="sm:col-span-2 rounded-3xl bg-[#f3ede3] p-5 dark:bg-[#171717]">
+                            <p class="text-sm font-medium text-[#171717] dark:text-white">Current account snapshot</p>
+                            <dl class="mt-4 grid gap-4 sm:grid-cols-2">
+                                <div><dt class="text-xs uppercase tracking-[0.18em] text-black/45 dark:text-white/45">Name</dt><dd class="mt-2 text-sm text-[#171717] dark:text-white">{{ user.first_name|default:"Not set" }}</dd></div>
+                                <div><dt class="text-xs uppercase tracking-[0.18em] text-black/45 dark:text-white/45">Email</dt><dd class="mt-2 text-sm text-[#171717] dark:text-white">{{ user.email|default:"Not set" }}</dd></div>
+                                <div><dt class="text-xs uppercase tracking-[0.18em] text-black/45 dark:text-white/45">Current crop</dt><dd class="mt-2 text-sm text-[#171717] dark:text-white">{{ profile.current_crop|default:"Not set" }}</dd></div>
+                                <div><dt class="text-xs uppercase tracking-[0.18em] text-black/45 dark:text-white/45">Phone number</dt><dd class="mt-2 text-sm text-[#171717] dark:text-white">{{ profile.phone_number|default:"Not set" }}</dd></div>
+                            </dl>
+                        </div>
+
+                        <div class="sm:col-span-2">
+                            <button type="submit" class="inline-flex rounded-full bg-[#171717] px-5 py-3 text-sm font-medium text-white transition hover:bg-black dark:bg-white dark:text-black">
+                                Save profile
+                            </button>
+                        </div>
+                    </form>
+                </section>
+                {% elif panel == 'language' %}
+                <section class="rounded-[28px] border border-black/10 bg-white p-6 shadow-[0_20px_70px_rgba(20,20,20,0.08)] dark:border-white/10 dark:bg-[#121212]">
+                    <p class="text-xs font-medium uppercase tracking-[0.24em] text-black/45 dark:text-white/45">Settings</p>
+                    <h1 class="mt-2 text-3xl font-semibold tracking-tight text-[#171717] dark:text-white">Language</h1>
+                    <p class="mt-3 text-sm leading-6 text-black/60 dark:text-white/60">Choose the language used for your profile and voice-entry defaults.</p>
+                    <form method="post" class="mt-8 max-w-xl space-y-5">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="language">
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-[#171717] dark:text-white">Preferred language</label>
+                            <select name="language" class="w-full rounded-2xl border border-black/10 bg-[#faf7f2] px-4 py-3 text-sm outline-none focus:border-black dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white">
+                                {% for code, label in language_choices %}
+                                <option value="{{ code }}" {% if profile.language == code %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="inline-flex rounded-full bg-[#171717] px-5 py-3 text-sm font-medium text-white transition hover:bg-black dark:bg-white dark:text-black">Save language</button>
+                    </form>
+                </section>
+                {% elif panel == 'themes' %}
+                <section class="rounded-[28px] border border-black/10 bg-white p-6 shadow-[0_20px_70px_rgba(20,20,20,0.08)] dark:border-white/10 dark:bg-[#121212]">
+                    <p class="text-xs font-medium uppercase tracking-[0.24em] text-black/45 dark:text-white/45">Settings</p>
+                    <h1 class="mt-2 text-3xl font-semibold tracking-tight text-[#171717] dark:text-white">Themes</h1>
+                    <p class="mt-3 text-sm leading-6 text-black/60 dark:text-white/60">Theme changes apply immediately and are stored on this device, just like YouTube-style appearance preferences.</p>
+                    <div class="mt-8 grid gap-4 sm:grid-cols-3">
+                        <button type="button" @click="setTheme('light')" :class="theme === 'light' ? 'border-black bg-black text-white dark:border-white dark:bg-white dark:text-black' : 'border-black/10 bg-[#faf7f2] text-[#171717] dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white'" class="rounded-3xl border p-5 text-left transition">
+                            <p class="text-sm font-medium">Light</p>
+                            <p class="mt-2 text-xs opacity-70">Clean daylight interface</p>
+                        </button>
+                        <button type="button" @click="setTheme('dark')" :class="theme === 'dark' ? 'border-black bg-black text-white dark:border-white dark:bg-white dark:text-black' : 'border-black/10 bg-[#faf7f2] text-[#171717] dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white'" class="rounded-3xl border p-5 text-left transition">
+                            <p class="text-sm font-medium">Dark</p>
+                            <p class="mt-2 text-xs opacity-70">Night-focused contrast</p>
+                        </button>
+                        <button type="button" @click="setTheme('system')" :class="theme === 'system' ? 'border-black bg-black text-white dark:border-white dark:bg-white dark:text-black' : 'border-black/10 bg-[#faf7f2] text-[#171717] dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white'" class="rounded-3xl border p-5 text-left transition">
+                            <p class="text-sm font-medium">System</p>
+                            <p class="mt-2 text-xs opacity-70">Follow device setting</p>
+                        </button>
+                    </div>
+                </section>
+                {% elif panel == 'password' %}
+                <section class="rounded-[28px] border border-black/10 bg-white p-6 shadow-[0_20px_70px_rgba(20,20,20,0.08)] dark:border-white/10 dark:bg-[#121212]">
+                    <p class="text-xs font-medium uppercase tracking-[0.24em] text-black/45 dark:text-white/45">Settings</p>
+                    <h1 class="mt-2 text-3xl font-semibold tracking-tight text-[#171717] dark:text-white">Password change</h1>
+                    <p class="mt-3 text-sm leading-6 text-black/60 dark:text-white/60">
+                        {% if has_usable_password %}
+                        {{ password_hint }}
+                        {% else %}
+                        Your account currently uses Google sign-in only. Set a password here if you also want to log in with email and password.
+                        {% endif %}
+                    </p>
+                    <form method="post" class="mt-8 max-w-xl space-y-5">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="password">
+
+                        {% if has_usable_password %}
+                        <div x-data="{ showPassword: false }">
+                            <label class="mb-2 block text-sm font-medium text-[#171717] dark:text-white">Current password</label>
+                            <div class="relative">
+                                <input name="current_password" :type="showPassword ? 'text' : 'password'" required class="w-full rounded-2xl border border-black/10 bg-[#faf7f2] px-4 py-3 pr-16 text-sm outline-none focus:border-black dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white">
+                                <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-3 inline-flex items-center text-xs text-black/45 dark:text-white/45" aria-label="Toggle password visibility">
+                                    <span x-show="!showPassword">Show</span><span x-show="showPassword" x-cloak>Hide</span>
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div x-data="{ showPassword: false }">
+                            <label class="mb-2 block text-sm font-medium text-[#171717] dark:text-white">New password</label>
+                            <div class="relative">
+                                <input name="new_password" :type="showPassword ? 'text' : 'password'" minlength="8" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}" title="{{ password_hint }}" required class="w-full rounded-2xl border border-black/10 bg-[#faf7f2] px-4 py-3 pr-16 text-sm outline-none focus:border-black dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white">
+                                <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-3 inline-flex items-center text-xs text-black/45 dark:text-white/45" aria-label="Toggle password visibility">
+                                    <span x-show="!showPassword">Show</span><span x-show="showPassword" x-cloak>Hide</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div x-data="{ showPassword: false }">
+                            <label class="mb-2 block text-sm font-medium text-[#171717] dark:text-white">Confirm new password</label>
+                            <div class="relative">
+                                <input name="confirm_password" :type="showPassword ? 'text' : 'password'" required class="w-full rounded-2xl border border-black/10 bg-[#faf7f2] px-4 py-3 pr-16 text-sm outline-none focus:border-black dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white">
+                                <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-3 inline-flex items-center text-xs text-black/45 dark:text-white/45" aria-label="Toggle password visibility">
+                                    <span x-show="!showPassword">Show</span><span x-show="showPassword" x-cloak>Hide</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="inline-flex rounded-full bg-[#171717] px-5 py-3 text-sm font-medium text-white transition hover:bg-black dark:bg-white dark:text-black">Update password</button>
+                    </form>
+                </section>
+                {% else %}
+                <section class="rounded-[28px] border border-black/10 bg-white p-6 shadow-[0_20px_70px_rgba(20,20,20,0.08)] dark:border-white/10 dark:bg-[#121212]">
+                    <p class="text-xs font-medium uppercase tracking-[0.24em] text-black/45 dark:text-white/45">Settings</p>
+                    <h1 class="mt-2 text-3xl font-semibold tracking-tight text-[#171717] dark:text-white">Support</h1>
+                    <p class="mt-3 max-w-2xl text-sm leading-6 text-black/60 dark:text-white/60">
+                        Need help with your account, crop profile, or image diagnosis flow? Reach out to support directly.
+                    </p>
+                    <div class="mt-8 grid gap-4 sm:grid-cols-2">
+                        <div class="rounded-3xl bg-[#f3ede3] p-6 dark:bg-[#171717]">
+                            <p class="text-xs uppercase tracking-[0.18em] text-black/45 dark:text-white/45">Support phone</p>
+                            <p class="mt-3 text-2xl font-semibold text-[#171717] dark:text-white">9392702470</p>
+                        </div>
+                        <div class="rounded-3xl bg-[#f3ede3] p-6 dark:bg-[#171717]">
+                            <p class="text-xs uppercase tracking-[0.18em] text-black/45 dark:text-white/45">Best use</p>
+                            <p class="mt-3 text-sm leading-6 text-[#171717] dark:text-white">Use this contact for onboarding help, password issues, and diagnosis workflow support.</p>
+                        </div>
+                    </div>
+                </section>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

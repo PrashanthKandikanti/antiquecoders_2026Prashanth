@@ -1,9 +1,12 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en" x-data="themeManager()" x-init="initTheme()" :class="{ 'dark': isDark }">
+<html lang="en" x-data="themeManager({ sidebarEnabled: {% block sidebar_enabled %}true{% endblock %} })" x-init="initTheme()" :class="{ 'dark': isDark }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}AntiqueCoder{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon-bridge.svg' %}">
+    <link rel="shortcut icon" href="{% static 'images/favicon-bridge.svg' %}">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine.js for Theme state management -->
@@ -54,7 +57,7 @@
 <body class="bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text font-sans antialiased transition-colors duration-200 overflow-hidden">
     <div class="h-screen flex w-full">
         <!-- Sidebar Area -->
-        <aside x-show="sidebarOpen"
+        <aside x-show="sidebarEnabled && sidebarOpen"
                x-transition:enter="transition-all ease-in-out duration-300 transform"
                x-transition:enter-start="-translate-x-full opacity-0 max-w-0"
                x-transition:enter-end="translate-x-0 opacity-100 max-w-[260px]"
@@ -72,13 +75,15 @@
     </div>
 
     <script>
-        function themeManager() {
+        function themeManager(config = {}) {
             return {
                 theme: localStorage.getItem('theme') || 'system',
                 isDark: false,
-                sidebarOpen: window.innerWidth > 768,
+                sidebarEnabled: config.sidebarEnabled !== false,
+                sidebarOpen: config.sidebarEnabled === false ? false : window.innerWidth > 768,
                 
                 toggleSidebar() {
+                    if (!this.sidebarEnabled) return;
                     this.sidebarOpen = !this.sidebarOpen;
                 },
                 

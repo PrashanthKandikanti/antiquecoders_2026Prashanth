@@ -1,0 +1,71 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block sidebar_enabled %}false{% endblock %}
+
+{% block content %}
+<div class="relative flex-1 h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.05),_transparent_34%),linear-gradient(135deg,#f4efe6,_#fbfaf7_48%,#ece6db)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.08),_transparent_32%),linear-gradient(135deg,#090909,_#111111_48%,#181818)]">
+    <div class="absolute inset-0 lg:hidden">
+        <img
+            src="{% static 'images/auth-bridge-hero.svg' %}"
+            alt="A monochrome transition from traditional farming to AI-powered agriculture"
+            class="h-full w-full object-cover"
+        >
+        <div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.58),rgba(0,0,0,0.36),rgba(0,0,0,0.74))]"></div>
+    </div>
+
+    <div class="relative mx-auto flex h-full w-full max-w-[1440px] items-center px-4 py-4 sm:px-8 lg:px-10">
+        <div class="grid h-full max-h-[calc(100vh-2rem)] w-full overflow-hidden rounded-[32px] border border-white/20 bg-white/10 shadow-[0_30px_120px_rgba(21,21,21,0.18)] backdrop-blur-md lg:h-auto lg:max-h-[920px] lg:grid-cols-[minmax(420px,520px)_1fr] lg:border-black/10 lg:bg-white/85 lg:backdrop-blur dark:border-white/10 dark:bg-[#121212]/35 dark:lg:bg-[#121212]/92">
+            <section class="flex h-full items-center justify-center border-b border-white/10 px-6 py-6 sm:px-8 lg:border-b-0 lg:border-r lg:border-black/5 lg:px-10 lg:py-10 dark:lg:border-white/10">
+                <div class="w-full max-w-[420px]">
+                    <div class="mb-6 lg:mb-8">
+                        <p class="mb-3 inline-flex rounded-full border border-white/25 px-3 py-1 text-xs font-medium uppercase tracking-[0.22em] text-white/75 lg:border-black/10 lg:text-black/60 dark:border-white/15 dark:text-white/60">
+                            AntiqueCoders AI
+                        </p>
+                        <h1 class="text-2xl font-semibold tracking-tight text-white lg:text-3xl lg:text-[#171717] dark:text-white">
+                            {% block auth_heading %}{% endblock %}
+                        </h1>
+                        <p class="mt-2 text-sm leading-6 text-white/85 lg:mt-3 lg:text-black/60 dark:text-white/60">
+                            {% block auth_subheading %}{% endblock %}
+                        </p>
+                    </div>
+
+                    {% if messages %}
+                    <div class="mb-5 space-y-2">
+                        {% for message in messages %}
+                        <div class="rounded-2xl border border-red-200/70 bg-red-50/92 px-4 py-3 text-sm text-red-700 backdrop-blur lg:border-red-200 lg:bg-red-50 dark:border-red-500/25 dark:bg-red-500/10 dark:text-red-200">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% block auth_form %}{% endblock %}
+
+                    <p class="mt-6 text-xs leading-5 text-white/70 lg:mt-8 lg:leading-6 lg:text-black/45 dark:text-white/45">
+                        Strong passwords are supported here. Use uppercase, lowercase, numbers, and symbols for better account security.
+                    </p>
+                </div>
+            </section>
+
+            <section class="relative hidden min-h-[720px] overflow-hidden lg:block">
+                <img
+                    src="{% static 'images/auth-bridge-hero.svg' %}"
+                    alt="A monochrome transition from traditional farming to AI-powered agriculture"
+                    class="absolute inset-0 h-full w-full object-cover"
+                >
+                <div class="absolute inset-0 bg-gradient-to-br from-black/25 via-black/5 to-white/5"></div>
+                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent p-10 text-white">
+                    <p class="text-xs font-medium uppercase tracking-[0.28em] text-white/70">From field to future</p>
+                    <h2 class="mt-3 max-w-xl text-3xl font-semibold leading-tight">
+                        The same crop wisdom, now crossing into faster disease detection and guided decisions.
+                    </h2>
+                    <p class="mt-4 max-w-lg text-sm leading-6 text-white/80">
+                        Sign in to track crops, upload wheat leaf images, and manage your farming profile from one place.
+                    </p>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}

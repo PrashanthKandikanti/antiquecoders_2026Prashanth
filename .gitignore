@@ -20,3 +20,4 @@ django_out.txt
 server_log.txt
 server_output.txt
 server_output_utf8.txt
+media/

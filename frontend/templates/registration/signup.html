@@ -1,63 +1,123 @@
-{% extends 'core/base.html' %}
+{% extends 'registration/auth_base.html' %}
 
 {% block title %}Sign up - AntiqueCoders{% endblock %}
+{% block auth_heading %}Create your farmer profile{% endblock %}
+{% block auth_subheading %}Join the platform with your crop details so the AI workspace feels personal from the first upload.{% endblock %}
 
-{% block content %}
-<div class="flex-1 flex items-center justify-center p-6">
-  <div class="w-full max-w-4xl bg-light-surface dark:bg-dark-surface rounded-2xl shadow-md overflow-hidden flex flex-col lg:flex-row">
-    <!-- Left side: form -->
-    <div class="w-full lg:w-1/2 p-8">
-      <h2 class="text-2xl font-semibold mb-4">Create an account</h2>
-      {% if messages %}
-      <div class="mb-3">
-        {% for message in messages %}
-        <div class="text-sm text-red-600">{{ message }}</div>
-        {% endfor %}
-      </div>
-      {% endif %}
+{% block auth_form %}
+<form method="post" class="space-y-3.5 sm:space-y-4">
+    {% csrf_token %}
+    {% if google_auth_enabled %}
+    <a href="{% url 'google_login' %}" class="inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/16 lg:border-black/10 lg:bg-white lg:text-[#171717] lg:hover:bg-[#f5efe6] dark:border-white/10 dark:bg-[#171717] dark:text-white dark:hover:bg-[#1f1f1f]">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.2-.9 2.2-1.8 2.9l3 2.3c1.7-1.6 2.7-3.9 2.7-6.7 0-.6-.1-1.2-.2-1.7H12Z"/>
+            <path fill="#34A853" d="M12 21c2.4 0 4.5-.8 6-2.2l-3-2.3c-.8.5-1.9.8-3 .8-2.3 0-4.3-1.6-5-3.8l-3.1 2.4C5.4 18.9 8.4 21 12 21Z"/>
+            <path fill="#4A90E2" d="M7 13.5c-.2-.5-.3-1-.3-1.5s.1-1 .3-1.5L3.9 8.1C3.3 9.3 3 10.6 3 12s.3 2.7.9 3.9L7 13.5Z"/>
+            <path fill="#FBBC05" d="M12 6.8c1.3 0 2.5.5 3.4 1.3l2.6-2.6C16.4 4 14.4 3 12 3 8.4 3 5.4 5.1 3.9 8.1L7 10.5c.7-2.2 2.7-3.7 5-3.7Z"/>
+        </svg>
+        Continue with Google
+    </a>
 
-      <form method="post" class="space-y-4">
-        {% csrf_token %}
-        <div>
-          <label class="block text-sm font-medium mb-1">Full name</label>
-          <input name="name" type="text" required class="w-full px-3 py-2 border rounded-lg bg-light-input dark:bg-dark-input focus:outline-none" placeholder="Your full name">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Email</label>
-          <input name="email" type="email" required class="w-full px-3 py-2 border rounded-lg bg-light-input dark:bg-dark-input focus:outline-none" placeholder="you@example.com">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Phone number</label>
-          <input name="phone" type="text" class="w-full px-3 py-2 border rounded-lg bg-light-input dark:bg-dark-input focus:outline-none" placeholder="+91xxxxxxxxxx (optional)">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Password</label>
-          <input name="password" type="password" required class="w-full px-3 py-2 border rounded-lg bg-light-input dark:bg-dark-input focus:outline-none" placeholder="Choose a password">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Confirm password</label>
-          <input name="password2" type="password" required class="w-full px-3 py-2 border rounded-lg bg-light-input dark:bg-dark-input focus:outline-none" placeholder="Repeat password">
-        </div>
-        <div class="flex items-center justify-between">
-          <a href="/accounts/login/" class="text-sm text-blue-600 hover:underline">Already have an account? Log in</a>
-          <button type="submit" class="bg-black text-white px-4 py-2 rounded-lg">Create account</button>
-        </div>
-      </form>
+    <div class="flex items-center gap-3 text-[11px] uppercase tracking-[0.24em] text-white/55 lg:text-black/35 dark:text-white/35">
+        <span class="h-px flex-1 bg-white/15 lg:bg-black/10 dark:bg-white/10"></span>
+        <span>or</span>
+        <span class="h-px flex-1 bg-white/15 lg:bg-black/10 dark:bg-white/10"></span>
+    </div>
+    {% endif %}
 
-      <div class="mt-6">
-        <div class="text-sm text-gray-500">Or continue with</div>
-        <div class="mt-3 flex gap-3">
-          <a href="/accounts/google/login/" class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-100"> 
-            <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google" class="w-5 h-5"> Sign up with Google
-          </a>
-        </div>
-      </div>
+    <div>
+        <label class="mb-2 block text-sm font-medium text-white lg:text-[#1b1b1b] dark:text-white">Full name</label>
+        <input
+            name="name"
+            type="text"
+            required
+            value="{{ form_data.name|default:'' }}"
+            class="w-full rounded-2xl border border-white/20 bg-white/12 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-[#faf7f2] lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
+            placeholder="Your full name"
+        >
     </div>
 
-    <!-- Right side: empty / illustration -->
-    <div class="hidden lg:block lg:w-1/2 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-[#111111] dark:to-[#0b0b0b]">
-      <!-- Intentionally left blank for visual balance -->
+    <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+            <label class="mb-2 block text-sm font-medium text-white lg:text-[#1b1b1b] dark:text-white">Email</label>
+            <input
+                name="email"
+                type="email"
+                required
+                value="{{ form_data.email|default:'' }}"
+                class="w-full rounded-2xl border border-white/20 bg-white/12 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-[#faf7f2] lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
+                placeholder="you@example.com"
+            >
+        </div>
+        <div>
+            <label class="mb-2 block text-sm font-medium text-white lg:text-[#1b1b1b] dark:text-white">Phone number</label>
+            <input
+                name="phone"
+                type="text"
+                value="{{ form_data.phone|default:'' }}"
+                class="w-full rounded-2xl border border-white/20 bg-white/12 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-[#faf7f2] lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
+                placeholder="+91xxxxxxxxxx"
+            >
+        </div>
     </div>
-  </div>
-</div>
+
+    <div>
+        <label class="mb-2 block text-sm font-medium text-white lg:text-[#1b1b1b] dark:text-white">Current crop</label>
+        <input
+            name="current_crop"
+            type="text"
+            value="{{ form_data.current_crop|default:'' }}"
+            class="w-full rounded-2xl border border-white/20 bg-white/12 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-[#faf7f2] lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
+            placeholder="Wheat, paddy, cotton..."
+        >
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+        <div x-data="{ showPassword: false }">
+            <label class="mb-2 block text-sm font-medium text-white lg:text-[#1b1b1b] dark:text-white">Password</label>
+            <div class="relative">
+                <input
+                    name="password"
+                    :type="showPassword ? 'text' : 'password'"
+                    minlength="8"
+                    pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}"
+                    title="{{ password_hint }}"
+                    required
+                    class="w-full rounded-2xl border border-white/20 bg-white/12 px-4 py-3 pr-12 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-[#faf7f2] lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
+                    placeholder="Create a strong password"
+                >
+                <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-3 inline-flex items-center text-white/65 transition hover:text-white lg:text-black/45 lg:hover:text-black dark:text-white/50 dark:hover:text-white" aria-label="Toggle password visibility">
+                    <svg x-show="!showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5.25 12 5.25c4.478 0 8.269 2.693 9.542 6.75-1.273 4.057-5.064 6.75-9.542 6.75-4.477 0-8.268-2.693-9.542-6.75Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <svg x-show="showPassword" x-cloak xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m3 3 18 18"/><path stroke-linecap="round" stroke-linejoin="round" d="M10.584 10.587A2 2 0 0 0 12 16a2 2 0 0 0 1.416-.584"/><path stroke-linecap="round" stroke-linejoin="round" d="M9.88 5.09A10.94 10.94 0 0 1 12 4.875c4.478 0 8.269 2.693 9.542 6.75a11.956 11.956 0 0 1-4.132 5.94M6.228 6.228A11.954 11.954 0 0 0 2.458 12c1.274 4.057 5.065 6.75 9.542 6.75a10.94 10.94 0 0 0 2.12-.215"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <div x-data="{ showPassword: false }">
+            <label class="mb-2 block text-sm font-medium text-white lg:text-[#1b1b1b] dark:text-white">Confirm password</label>
+            <div class="relative">
+                <input
+                    name="password2"
+                    :type="showPassword ? 'text' : 'password'"
+                    required
+                    class="w-full rounded-2xl border border-white/20 bg-white/12 px-4 py-3 pr-12 text-sm text-white outline-none transition placeholder:text-white/60 focus:border-white focus:ring-2 focus:ring-white/10 lg:border-black/10 lg:bg-[#faf7f2] lg:text-[#171717] lg:placeholder:text-black/40 lg:focus:border-black lg:focus:ring-black/5 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:focus:border-white"
+                    placeholder="Repeat your password"
+                >
+                <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-3 inline-flex items-center text-white/65 transition hover:text-white lg:text-black/45 lg:hover:text-black dark:text-white/50 dark:hover:text-white" aria-label="Toggle password visibility">
+                    <svg x-show="!showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5.25 12 5.25c4.478 0 8.269 2.693 9.542 6.75-1.273 4.057-5.064 6.75-9.542 6.75-4.477 0-8.268-2.693-9.542-6.75Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <svg x-show="showPassword" x-cloak xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m3 3 18 18"/><path stroke-linecap="round" stroke-linejoin="round" d="M10.584 10.587A2 2 0 0 0 12 16a2 2 0 0 0 1.416-.584"/><path stroke-linecap="round" stroke-linejoin="round" d="M9.88 5.09A10.94 10.94 0 0 1 12 4.875c4.478 0 8.269 2.693 9.542 6.75a11.956 11.956 0 0 1-4.132 5.94M6.228 6.228A11.954 11.954 0 0 0 2.458 12c1.274 4.057 5.065 6.75 9.542 6.75a10.94 10.94 0 0 0 2.12-.215"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <p class="text-xs leading-5 text-white/75 lg:text-black/50 dark:text-white/50">{{ password_hint }}</p>
+
+    <div class="flex items-center justify-between gap-4 pt-2">
+        <a href="{% url 'login' %}" class="text-sm font-medium text-white/80 transition hover:text-white lg:text-[#444] lg:hover:text-black dark:text-white/70 dark:hover:text-white">Already have an account? Log in</a>
+        <button type="submit" class="inline-flex items-center rounded-full bg-white/16 px-5 py-3 text-sm font-medium text-white ring-1 ring-white/20 transition hover:bg-white/22 lg:bg-[#171717] lg:text-white lg:ring-0 lg:hover:bg-black dark:bg-white dark:text-black dark:ring-0 dark:hover:bg-[#e8e8e8]">
+            Create account
+        </button>
+    </div>
+</form>
 {% endblock %}

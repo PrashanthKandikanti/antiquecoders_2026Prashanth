@@ -86,30 +86,51 @@
         {% if user.is_authenticated %}
         <div class="flex items-center gap-3">
             <span class="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:block">
-                Welcome back, {{ user.username }}
+                {{ user.get_full_name|default:user.username }}
             </span>
             <div x-data="{ profileOpen: false }" class="relative z-50">
-                <button @click="profileOpen = !profileOpen" @click.outside="profileOpen = false" class="w-8 h-8 rounded-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface flex items-center justify-center text-gray-500 hover:bg-gray-50 dark:hover:bg-dark-input transition focus:outline-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                    </svg>
+                <button @click="profileOpen = !profileOpen" @click.outside="profileOpen = false" class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-light-border bg-gray-900 text-sm font-semibold text-white transition hover:opacity-90 focus:outline-none dark:border-dark-border dark:bg-white dark:text-black">
+                    {% if profile and profile.profile_image %}
+                    <img src="{{ profile.profile_image.url }}" alt="{{ user.get_full_name|default:user.username }}" class="h-full w-full object-cover">
+                    {% else %}
+                    {{ user.get_full_name|default:user.username|slice:":1"|upper }}
+                    {% endif %}
                 </button>
 
-                <!-- Dropdown Form -->
-                <div x-show="profileOpen" x-transition.opacity class="absolute right-0 mt-2 w-64 bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.1)] py-2 text-left" style="display: none;" x-cloak>
-                    <div class="px-4 py-2 border-b border-light-border dark:border-dark-border">
-                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{{ user.get_full_name|default:user.username }}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ user.email|default:"No email set" }}</p>
+                <div x-show="profileOpen" x-transition.opacity class="absolute right-0 mt-3 w-[min(92vw,22rem)] overflow-hidden rounded-3xl border border-light-border bg-light-surface py-2 text-left shadow-[0_18px_45px_rgba(0,0,0,0.14)] dark:border-dark-border dark:bg-dark-surface" style="display: none;" x-cloak>
+                    <div class="border-b border-light-border px-4 py-4 dark:border-dark-border">
+                        <div class="flex items-start gap-3">
+                            <div class="h-14 w-14 overflow-hidden rounded-full border border-light-border bg-gray-900 text-white dark:border-dark-border dark:bg-white dark:text-black">
+                                {% if profile and profile.profile_image %}
+                                <img src="{{ profile.profile_image.url }}" alt="{{ user.get_full_name|default:user.username }}" class="h-full w-full object-cover">
+                                {% else %}
+                                <div class="flex h-full w-full items-center justify-center text-lg font-semibold">
+                                    {{ user.get_full_name|default:user.username|slice:":1"|upper }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{{ user.get_full_name|default:user.username }}</p>
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 truncate">{{ user.email|default:"No email set" }}</p>
+                                <div class="mt-3 grid gap-2 text-xs text-gray-600 dark:text-gray-300 sm:hidden">
+                                    <div class="rounded-2xl bg-gray-100 px-3 py-2 dark:bg-[#1f1f1f]">
+                                        <span class="block text-[10px] uppercase tracking-[0.18em] text-gray-400 dark:text-gray-500">Current crop</span>
+                                        <span class="mt-1 block truncate">{{ profile.current_crop|default:"Not set" }}</span>
+                                    </div>
+                                    <div class="rounded-2xl bg-gray-100 px-3 py-2 dark:bg-[#1f1f1f]">
+                                        <span class="block text-[10px] uppercase tracking-[0.18em] text-gray-400 dark:text-gray-500">Phone</span>
+                                        <span class="mt-1 block truncate">{{ profile.phone_number|default:"Not set" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="px-4 py-3 border-b border-light-border dark:border-dark-border text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                        <p><span class="font-medium text-gray-800 dark:text-gray-300">Phone:</span> {{ user.profile.phone_number|default:"Not set" }}</p>
-                        <p><span class="font-medium text-gray-800 dark:text-gray-300">Language:</span> {{ user.profile.get_language_display|default:"English" }}</p>
-                    </div>
-                    <div class="py-1">
-                        <a href="{% url 'password_change' %}" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-input transition">Change Password</a>
+                    <div class="py-2">
+                        <a href="{% url 'account_profile' %}?panel=profile" class="block px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-input">Profile</a>
+                        <a href="{% url 'account_settings' %}?panel=language" class="block px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-input">Settings</a>
                         <form method="POST" action="{% url 'logout' %}">
                             {% csrf_token %}
-                            <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-dark-input transition">Log out</button>
+                            <button type="submit" class="block w-full px-4 py-2 text-left text-sm text-red-600 transition hover:bg-gray-100 dark:text-red-400 dark:hover:bg-dark-input">Logout</button>
                         </form>
                     </div>
                 </div>
@@ -222,7 +243,7 @@ function speechRecognition() {
                 this.recognition.interimResults = false;
                 
                 // Set language based on user profile if available, default to en-US
-                this.recognition.lang = '{{ user.profile.language|default:"en-US" }}';
+                this.recognition.lang = '{{ profile.language|default:"en-US" }}';
 
                 this.recognition.onresult = (event) => {
                     const text = event.results[0][0].transcript;
